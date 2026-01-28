@@ -16,6 +16,12 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json());
 
+
+// Basic route for health check
+app.get('/', (req, res) => {
+    res.send('Live Bidding Backend is Running!');
+});
+
 // REST API
 app.get('/items', (req, res) => {
     res.json(items);
