@@ -48,6 +48,13 @@ const ItemCard = ({ item, placeBid, socketId }) => {
         }
     }, [item.currentBid, item.lastBidTime]);
 
+    // Reset local bid state when auction resets (no lastBidder implies fresh start)
+    useEffect(() => {
+        if (!item.lastBidder) {
+            setHasBid(false);
+        }
+    }, [item.lastBidder]);
+
     const isWinning = item.lastBidder === socketId;
     // If I bid before but am not winning now, show outbid? 
     // For simplicity, if I am not winning and bid matches some criteria... 

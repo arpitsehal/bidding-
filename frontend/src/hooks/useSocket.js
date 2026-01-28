@@ -25,8 +25,14 @@ export const useSocket = () => {
         socket.on('UPDATE_BID', (updatedItem) => {
             setItems((prevItems) =>
                 prevItems.map((item) =>
-                    item.id === updatedItem.itemId || item.id === updatedItem.id // Handle both formats if flexible, but server sends full item or partial
-                        ? { ...item, ...updatedItem }
+                    // Handle both formats if flexible, but server sends full item or partial
+                    item.id === updatedItem.itemId || item.id === updatedItem.id
+                        ? {
+                            ...item,
+                            ...updatedItem,
+                            // Maintain compatibility with ItemCard which expects lastBidder
+                            ...(updatedItem.bidder ? { lastBidder: updatedItem.bidder } : {})
+                        }
                         : item
                 )
             );
