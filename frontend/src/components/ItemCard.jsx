@@ -10,21 +10,34 @@ const ItemCard = ({ item, placeBid, socketId }) => {
     useEffect(() => {
         const interval = setInterval(() => {
             const now = Date.now();
-            const diff = item.endTime - now;
 
-            if (diff <= 0) {
-                setTimeLeft('Auction Ended');
-                setIsEnded(true);
-                clearInterval(interval);
+            if (item.restartAt) {
+                const restartDiff = item.restartAt - now;
+                if (restartDiff > 0) {
+                    const seconds = Math.ceil(restartDiff / 1000);
+                    setTimeLeft(`Restarting in ${seconds}s`);
+                    setIsEnded(true);
+                } else {
+                    // Should be resetting soon
+                    setTimeLeft('Restarting...');
+                }
             } else {
-                const minutes = Math.floor(diff / 60000);
-                const seconds = Math.floor((diff % 60000) / 1000);
-                setTimeLeft(`${minutes}m ${seconds}s`);
+                const diff = item.endTime - now;
+
+                if (diff <= 0) {
+                    setTimeLeft('Auction Ended');
+                    setIsEnded(true);
+                } else {
+                    const minutes = Math.floor(diff / 60000);
+                    const seconds = Math.floor((diff % 60000) / 1000);
+                    setTimeLeft(`${minutes}m ${seconds}s`);
+                    setIsEnded(false);
+                }
             }
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [item.endTime]);
+    }, [item.endTime, item.restartAt]);
 
     // Flash animation logic
     useEffect(() => {

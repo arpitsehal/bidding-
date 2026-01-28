@@ -40,7 +40,7 @@ io.on('connection', (socket) => {
             return socket.emit('BID_ERROR', { message: 'Item not found' });
         }
 
-        if (Date.now() > item.endTime) {
+        if (item.restartAt || Date.now() > item.endTime) {
             return socket.emit('BID_ERROR', { message: 'Auction ended' });
         }
 
@@ -62,6 +62,30 @@ io.on('connection', (socket) => {
         console.log('User disconnected:', socket.id);
     });
 });
+
+// Auction Loop
+setInterval(() => {
+    const now = Date.now();
+    items.forEach(item => {
+        // Check if auction ended
+        if (now >= item.endTime && !item.restartAt) {
+            item.restartAt = now + 10000; // Restart in 10 seconds
+            io.emit('UPDATE_BID', { ...item }); // Broadcast ended state (clients see time expired)
+        }
+
+        // Check if restart time reached
+        if (item.restartAt && now >= item.restartAt) {
+            // Reset item
+            item.currentBid = item.startingPrice;
+            item.bidHistory = [];
+            item.endTime = now + item.duration; // Reset duration
+            item.restartAt = null;
+
+            // Broadcast reset
+            io.emit('INIT_ITEMS', items); // Re-init all items for simplicity or emit specific update
+        }
+    });
+}, 1000);
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {

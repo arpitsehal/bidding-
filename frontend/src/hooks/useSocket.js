@@ -22,11 +22,11 @@ export const useSocket = () => {
             setItems(initialItems);
         });
 
-        socket.on('UPDATE_BID', ({ itemId, currentBid, bidder }) => {
+        socket.on('UPDATE_BID', (updatedItem) => {
             setItems((prevItems) =>
                 prevItems.map((item) =>
-                    item.id === itemId
-                        ? { ...item, currentBid, lastBidder: bidder, lastBidTime: Date.now() }
+                    item.id === updatedItem.itemId || item.id === updatedItem.id // Handle both formats if flexible, but server sends full item or partial
+                        ? { ...item, ...updatedItem }
                         : item
                 )
             );
